@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Page</title>
+</head>
+<body>
+    <p><a href="{% url 'index' %}">主页</p>
+    <p><a href="{% url 'topics' %}">主题</a></p>
+    {% block content %}{% endblock content %}
+</body>
+</html>
