@@ -28,6 +28,7 @@ App名称: personal
 开发步骤：
 
 A. 准备：
+
 1. pycharm新建project，设置运行环境及应用名称；
 2. 默认前端页面：http://127.0.0.1:8000/
    
@@ -48,6 +49,7 @@ A. 准备：
     ```$ python3 manage.py migrate```
 
 B. 开发
+
 6. 定义模型 Topic webs/personal/models.py，Topic类只有两个属性
     ```python
     class Topic(models.Model):
@@ -115,7 +117,8 @@ B. 开发
     admin.site.register(Entry)
     ```
     
-前端页面：
+C. 前端页面：
+
 12. Index主页，添加urls映射,webs/urls.py
     ```python
     from personal import views
@@ -224,4 +227,4 @@ B. 开发
     {% endblock content %}
     ```
     
-24. # python-django-monolog
+24. 
