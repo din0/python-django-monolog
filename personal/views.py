@@ -61,7 +61,7 @@ def new_entry(request, topic_id):
     else:
         form = EntryForm(data=request.POST)
         if form.is_valid():
-            # 船体了实参 commit=False， 让Django创建新的条目对象并存储于new_entry中，但不保存到数据库中。
+            # 传递了实参 commit=False， 让Django创建新的条目对象并存储于new_entry中，但不保存到数据库中。
             new_entry = form.save(commit=False)
             new_entry.topic = topic
             new_entry.save()

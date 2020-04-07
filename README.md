@@ -516,13 +516,13 @@ E. 用户账户系统
     def topics(request):
         # filter()过滤用户
         topics = Topic.objects.filter(owner=request.user).order_by('date_add')
-    
+        ...
     def topic(request, topic_id):
         topic = Topic.objects.get(id=topic_id)
         # 确认请求内容属于当前账户
         if topic.owner != request.user:
             raise Http404
-    
+        ...
     def edit_entry(request, entry_id):
         # 获取需要修改的条目对象，以及对应的主题
         entry = Entry.objects.get(id=entry_id)
@@ -530,8 +530,10 @@ E. 用户账户系统
     
         if topic.owner != request.user:
             raise Http404
-    
+        ...
     def new_topic(request):
+        else:
+            ...
             if form.is_valid():
                 # 添加到对应的用户主题
                 new_topic = form.save(commit=False)
@@ -539,9 +541,79 @@ E. 用户账户系统
                 new_topic.save()
                 # 若填写字段均有效，则调用save()函数进行保存写入数据库。
                 # form.save()
+            ...
     ```
 
 F. 页面样式设置（bootstrap3）
+
+23. 安装 django-bootstrap3
+    ```python
+    # 注意：这里使用python3 -m pip，因为之前直接用pip3 install，有时会出现由于writable的情况，安装成功，但是无法调用。
+    $ python3 -m pip install django-bootstrap3
+    ```
+    配置：setting.py
+    ```python
+    INSTALLED_APPS = [
+        'bootstrap3',
+    ]
+    # 将jQuery库加入
+    BOOTSTRAP3 = {
+        'include_jquery': True,
+    }
+    ```
+
+24. 修改页面样式
+base.html
+```html
+# 顶部添加
+{% load bootstrap3 %}
+
+#<head>中添加css和js调用
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+```
+导航：
+```html
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed"
+                data-toggle="collapse" data-target="#navbar"
+                aria-expanded="false" aria-controls="navbar">
+            </button>
+            <a class="navbar-brand" href="{% url 'index' %}">
+                Learning Log
+            </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="{% url 'topics' %}">主题</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                    <li><a>hi, {{ user.username }}.</a></li>
+                    <li><a href="{% url 'logout' %}">注销</a></li>
+                {% else %}
+                    <li><a href="{% url 'register' %}">注册</a></li>
+                     <li><a href="{% url 'login' %}">登录</a></li>
+                {% endif %}
+            </ul>
+    </div>
+</nav>
+```
+页面主体；
+```html
+<div class="container">
+    <div class="page-header">
+        {% block header %}{% endblock header %}
+    </div>
+    <div>
+        {% block content %}{% endblock content %}
+    </div>
+</div>
+```
+
+
 
 
 G. 项目部署
