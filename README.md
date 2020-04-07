@@ -562,59 +562,60 @@ F. 页面样式设置（bootstrap3）
     }
     ```
 
-24. 修改页面样式
-base.html
-```html
-# 顶部添加
-{% load bootstrap3 %}
-
-#<head>中添加css和js调用
-{% bootstrap_css %}
-{% bootstrap_javascript %}
-```
-导航：
-```html
-<nav class="navbar navbar-default">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed"
-                data-toggle="collapse" data-target="#navbar"
-                aria-expanded="false" aria-controls="navbar">
-            </button>
-            <a class="navbar-brand" href="{% url 'index' %}">
-                Learning Log
-            </a>
+24. 修改页面主体样式
+    base.html
+    ```html
+    # 顶部添加
+    {% load bootstrap3 %}
+    
+    #<head>中添加css和js调用
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    ```
+    导航：
+    ```html
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed"
+                    data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                </button>
+                <a class="navbar-brand" href="{% url 'index' %}">
+                    Learning Log
+                </a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{% url 'topics' %}">主题</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                        <li><a>hi, {{ user.username }}.</a></li>
+                        <li><a href="{% url 'logout' %}">注销</a></li>
+                    {% else %}
+                        <li><a href="{% url 'register' %}">注册</a></li>
+                         <li><a href="{% url 'login' %}">登录</a></li>
+                    {% endif %}
+                </ul>
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="{% url 'topics' %}">主题</a></li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                {% if user.is_authenticated %}
-                    <li><a>hi, {{ user.username }}.</a></li>
-                    <li><a href="{% url 'logout' %}">注销</a></li>
-                {% else %}
-                    <li><a href="{% url 'register' %}">注册</a></li>
-                     <li><a href="{% url 'login' %}">登录</a></li>
-                {% endif %}
-            </ul>
+    </nav>
+    ```
+    页面主体；
+    ```html
+    <div class="container">
+        <div class="page-header">
+            {% block header %}{% endblock header %}
+        </div>
+        <div>
+            {% block content %}{% endblock content %}
+        </div>
     </div>
-</nav>
-```
-页面主体；
-```html
-<div class="container">
-    <div class="page-header">
-        {% block header %}{% endblock header %}
-    </div>
-    <div>
-        {% block content %}{% endblock content %}
-    </div>
-</div>
-```
+    ```
 
+25. 页面样式优化
 
-
+#### < - to be continued - >
 
 G. 项目部署
 
