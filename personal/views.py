@@ -1,25 +1,35 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from .models import Topic, Entry
 from .forms import TopicForm, EntryForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     return render(request, 'index.html')
 
+@login_required
 def topics(request):
-    topics = Topic.objects.order_by('date_add')
+    # filter()过滤用户
+    topics = Topic.objects.filter(owner=request.user).order_by('date_add')
     context = {'topics': topics}
     return render(request, 'topics.html', context)
 
+@login_required
 def topic(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
+
+    # 确认请求内容属于当前账户
+    if topic.owner != request.user:
+        raise Http404
+
     entries = topic.entry_set.order_by('-date_add')
     context = {'topic': topic, 'entries': entries}
     return render(request, 'topic.html', context)
 
+@login_required
 def new_topic(request):
     # 用户需要用表单提交时用POST，从服务器读取数据页面用GET；
     # 如果请求不是POST，则创建一个新表单，存储在变量 form 中，再通过context字典发送给models
@@ -31,13 +41,18 @@ def new_topic(request):
         form = TopicForm(request.POST)
         # 将form中的数据提交到数据库中，检测是否有效，使用 is_value() 函数来判断填写字段是否完整。
         if form.is_valid():
+            # 添加到对应的用户主题
+            new_topic = form.save(commit=False)
+            new_topic.owner = request.user
+            new_topic.save()
             # 若填写字段均有效，则调用save()函数进行保存写入数据库。
-            form.save()
+            # form.save()
             # 用reverse()函数获取页面topics的url，返回重定向到topics页面。
             return HttpResponseRedirect(reverse('topics'))
     context = {'form': form}
     return render(request, 'new_topic.html', context)
 
+@login_required
 def new_entry(request, topic_id):
     # 处理表单数据时，需要知道针对的是哪个主题，所以用topic_id来获得对应的主题
     topic = Topic.objects.get(id=topic_id)
@@ -55,10 +70,15 @@ def new_entry(request, topic_id):
     context = {'topic': topic, 'form': form}
     return render(request, 'new_entry.html', context)
 
+@login_required
 def edit_entry(request, entry_id):
     # 获取需要修改的条目对象，以及对应的主题
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
+
+    if topic.owner != request.user:
+        raise Http404
+
     if request.method != 'POST':
         form = EntryForm(instance=entry)
     else:

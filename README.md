@@ -477,32 +477,89 @@ E. 用户账户系统
         <a href="{% url 'login' %}">登录</a>
     {% endif %}
     ```
+    
+20. 用户数据权限设置
 
+    限制访问：@login_required
+    views.py
+    ```python
+    from django.contrib.auth.decorators import login_required
+    @login_required
+    def topics(request):
+    ```
+    当未登录时，返回login页面
+    setting.py
+    ```python
+    LOGIN_URL = '/login/'
+    ```
+
+21. 数据关联到用户
+
+    personal/models.py
+    ```
+    from django.contrib.auth.models import User
+    class Topic(models.Model):
+        # 增加关联到对应用户的外键
+        owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    ```
+    迁移数据库：
+    ```python
+    $ python3 manage.py makemigrations personal
+    $ python3 manage.py migrate
+    ```
+
+22. 只允许当前用户访问自己创建的内容
+
+    views.py
+    ```python
+    from django.http import HttpResponseRedirect, Http404
+    def topics(request):
+        # filter()过滤用户
+        topics = Topic.objects.filter(owner=request.user).order_by('date_add')
+    
+    def topic(request, topic_id):
+        topic = Topic.objects.get(id=topic_id)
+        # 确认请求内容属于当前账户
+        if topic.owner != request.user:
+            raise Http404
+    
+    def edit_entry(request, entry_id):
+        # 获取需要修改的条目对象，以及对应的主题
+        entry = Entry.objects.get(id=entry_id)
+        topic = entry.topic
+    
+        if topic.owner != request.user:
+            raise Http404
+    
+    def new_topic(request):
+            if form.is_valid():
+                # 添加到对应的用户主题
+                new_topic = form.save(commit=False)
+                new_topic.owner = request.user
+                new_topic.save()
+                # 若填写字段均有效，则调用save()函数进行保存写入数据库。
+                # form.save()
+    ```
 
 F. 页面样式设置（bootstrap3）
 
 
 G. 项目部署
 
-Git，可以选择阿里云或者Github
-    .gitignore 
-    ```
-    venv/
-    __pycache__/
-    *.sqlite3
-    ```
-    ```
-    $ git init
-    $ echo python-django-monolog" >> README.md
-    $ git commit -m "first commit"
-    $ git git remote add origin https://github.com/xxxx/python-django-monolog.git
-    $ git push -u origin master
-    # 输入用户名和密码
-    # 开始执行
-    日常更新发布
-    $ git add .
-    $ git commit -m "notes"
-    $ git push
-    ```
+Git，选择阿里云或者Github
+
+```
+$ git init
+$ echo python-django-monolog" >> README.md
+$ git commit -m "first commit"
+$ git git remote add origin https://github.com/xxxx/python-django-monolog.git
+$ git push -u origin master
+# 输入用户名和密码
+# 开始执行
+日常更新发布
+$ git add .
+$ git commit -m "notes"
+$ git push
+```
 
 

@@ -1,10 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Topic(models.Model):
     # 定义log主题，长度200字符
     text = models.CharField(max_length=200)
     # 定义添加时间
     date_add = models.DateTimeField(auto_now_add=True)
+    # 增加关联到对应用户的外键
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         # 返回模型字符串
