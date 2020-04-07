@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, re_path
 from personal import views
+from django.contrib.auth.views import LoginView
 
 # from . import views
 #。是指从当前的目录中导入views
@@ -14,4 +15,8 @@ urlpatterns = [
     path('new_topic/', views.new_topic, name='new_topic'),
     re_path(r'^new_entry/(?P<topic_id>\d+)/$', views.new_entry, name='new_entry'),
     re_path(r'^edit_entry/(?P<entry_id>\d+)/$', views.edit_entry, name='edit_entry'),
+
+    path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('register/', views.register, name='register'),
 ]

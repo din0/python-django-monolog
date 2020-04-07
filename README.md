@@ -342,65 +342,167 @@ D. 前端编辑页面，用户可在页面编辑
     ```
 
 17. 编辑条目 edit_entry
-urls.py
-```python
-re_path(r'^edit_entry/(?P<entry_id>\d+)/$', views.edit_entry, name='edit_entry'),
-```
-views.py
-```python
-from .models import Topic, Entry
-def edit_entry(request, entry_id):
-    # 获取需要修改的条目对象，以及对应的主题
-    entry = Entry.objects.get(id=entry_id)
-    topic = entry.topic
-    if request.method != 'POST':
-        form = EntryForm(instance=entry)
-    else:
-        # 根据表单里已有内容进行修改
-        form = EntryForm(instance=entry, data=request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('topic', args=[topic.id]))
-    context = {'entry': entry, 'topic': topic, 'form': form}
-    return render(request, 'edit_entry.html', context)
-```
-edit_entry.html
-```html
-{% extends "base.html" %}
-{% block content %}
-    <p>主题：<a href="{% url 'topic' topic.id %}">{{ topic }}</a></p>
-    <p>编辑条目：</p>
-    <form action="{% url 'edit_entry' entry.id %}" method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button name="submit">保存</button>
-    </form>
-{% endblock content %}
-```
-topic.html
-```html
-<p><a href="{% url 'edit_entry' entry.id %}">编辑该条目</a></p>
-```
+
+    urls.py
+    ```python
+    re_path(r'^edit_entry/(?P<entry_id>\d+)/$', views.edit_entry, name='edit_entry'),
+    ```
+    views.py
+    ```python
+    from .models import Topic, Entry
+    def edit_entry(request, entry_id):
+        # 获取需要修改的条目对象，以及对应的主题
+        entry = Entry.objects.get(id=entry_id)
+        topic = entry.topic
+        if request.method != 'POST':
+            form = EntryForm(instance=entry)
+        else:
+            # 根据表单里已有内容进行修改
+            form = EntryForm(instance=entry, data=request.POST)
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect(reverse('topic', args=[topic.id]))
+        context = {'entry': entry, 'topic': topic, 'form': form}
+        return render(request, 'edit_entry.html', context)
+    ```
+    edit_entry.html
+    ```html
+    {% extends "base.html" %}
+    {% block content %}
+        <p>主题：<a href="{% url 'topic' topic.id %}">{{ topic }}</a></p>
+        <p>编辑条目：</p>
+        <form action="{% url 'edit_entry' entry.id %}" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button name="submit">保存</button>
+        </form>
+    {% endblock content %}
+    ```
+    topic.html
+    ```html
+    <p><a href="{% url 'edit_entry' entry.id %}">编辑该条目</a></p>
+    ```
+
+E. 用户账户系统
+
+18. 登录&注销
+
+    创建一个新的APP：users
+    ```
+    python3 manage.py startapp users
+    ```
+    将users添加到setting.py中
+    ```python
+    INSTALLED APPS=('users',)
+    ```
+    urls.py
+    ```python
+    from django.contrib.auth.views import LoginView
+    urlpatterns = [
+        path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+        path('logout/', views.logout_view, name='logout'),
+    ]
+    ```
+    views.py
+    ```python
+    def logout_view(request):
+        logout(request)
+        return HttpResponseRedirect(reverse('index'))
+    ```
+    login.html
+    ```html
+    {% extends "base.html" %}
+    {% block content %}
+        {% if form.errors %}
+            <p>Your username and password didn't match. Please try again.</p>
+        {% endif %}
+        <form method="post" action="{% url 'login' %}" class="form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button name="submit">Login</button>
+            <input type="hidden" name="next" value="{% url 'index' %}" />
+        </form>
+    {% endblock content %}
+    ```
+    base.html
+    ```html
+    <p>
+        {% if user.is_authenticated %}
+            Hello, {{ user.username }}.
+            <a href="{% url 'logout' %}">注销</a>
+        {% else %}
+            <a href="{% url 'login' %}">log in</a>
+        {% endif %}
+    </p>
+    ```
+19. 注册
+
+    urls.py
+    ```python
+    path('register/', views.register, name='register'),
+    ```
+    views.py
+    ```python
+    from django.contrib.auth import login, logout, authenticate
+    from django.contrib.auth.forms import UserCreationForm
+    def register(request):
+        if request.method != 'POST':
+            form = UserCreationForm()
+        else:
+            form = UserCreationForm(data=request.POST)
+            if form.is_valid():
+                new_user = form.save()
+                authenticated_user = authenticate(username = new_user.username, password = request.POST['password1'])
+                login(request, authenticated_user)
+                return HttpResponseRedirect(reverse('index'))
+        context = {'form': form}
+        return render(request, 'register.html', context)
+    ```
+    register.html
+    ```html
+    {% extends "base.html" %}
+    {% block content %}
+        <form method="post" action="{% url 'register' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button name="submit">register</button>
+            <input type="hidden" name="next" value="{% url 'index' %}" />
+        </form>
+    {% endblock content %}
+    ```
+    base.html
+    ```html
+    {% else %}
+        <a href="{% url 'register' %}">注册</a>
+        <a href="{% url 'login' %}">登录</a>
+    {% endif %}
+    ```
 
 
+F. 页面样式设置（bootstrap3）
+
+
+G. 项目部署
 
 Git，可以选择阿里云或者Github
-.gitignore 
+    .gitignore 
+    ```
     venv/
     __pycache__/
     *.sqlite3
+    ```
+    ```
+    $ git init
+    $ echo python-django-monolog" >> README.md
+    $ git commit -m "first commit"
+    $ git git remote add origin https://github.com/xxxx/python-django-monolog.git
+    $ git push -u origin master
+    # 输入用户名和密码
+    # 开始执行
+    日常更新发布
+    $ git add .
+    $ git commit -m "notes"
+    $ git push
+    ```
 
-README.md
-
-$ git init
-$ echo python-django-monolog" >> README.md
-$ git commit -m "first commit"
-$ git git remote add origin https://github.com/xxxx/python-django-monolog.git
-$ git push -u origin master
-# 输入用户名和密码
-# 开始执行
-日常更新发布
-$ git add .
-$ git commit -m "notes"
-$ git push
 
