@@ -119,26 +119,26 @@ B. 开发
     
 C. 前端页面：
 
-12. Index主页，添加urls映射,webs/urls.py
+12. Index主页
+    添加urls映射,webs/urls.py
     ```python
     from personal import views
     path(r'', views.index, name='index'),
     ```
-13. 编写视图，personal/views.py
+    编写视图，personal/views.py
     ```python
     from django.shortcuts import render
     def index(request):
         return render(request, 'index.html')
     ``` 
-14. 编写模板页面，父模板，templates/base.html
+    编写模板页面，父模板，templates/base.html
     ```html
     <body>
         <h1><a href="{% url 'index' %}">主页</h1>
         {% block content %}{% endblock content %}
     </body>
     ```
-
-15. 编写子模板，templates/index.html
+    编写子模板，templates/index.html
     ```html
     {% extends "base.html" %}
     {% block content %}
@@ -146,12 +146,12 @@ C. 前端页面：
     {% endblock content %}
     ```
     
-16. 显示所有主题页面：Topics，添加urls映射,webs/urls.py
+13. 显示所有主题页面：Topics，
+    添加urls映射,webs/urls.py
     ```python
     path('topics/', views.topics, name='topics'),
     ```
-
-17. 编写视图，personal/views.py
+    编写视图，personal/views.py
     ```python
     from .models import Topic
     def topics(request):
@@ -159,16 +159,13 @@ C. 前端页面：
         context = {'topics': topics}
         return render(request, 'topics.html', context)
     ```
-
-18. 编写模板页面，父模板，templates/base.html
+    编写模板页面，父模板，templates/base.html
     ```html
     <p><a href="{% url 'topics' %}">主题</a></p>
     ```
-
-19. 编写子模板，templates/index.html
+    编写子模板，templates/index.html
     ```html
     {% extends "base.html" %}
-    
     {% block content %}
         <p>Topics</p>
         <ul>
@@ -181,12 +178,12 @@ C. 前端页面：
     {% endblock content %}
     ```
     
-20. 显示特定主题页面：Topic，添加urls映射,webs/urls.py
+14. 显示特定主题页面：Topic，
+    添加urls映射,webs/urls.py
     ```python
     re_path(r'^topics/(?P<topic_id>\d+)/$', views.topic, name='topic'),
     ```
-
-21. 编写视图，personal/views.py
+    编写视图，personal/views.py
     ```python
     def topic(request, topic_id):
         topic = Topic.objects.get(id=topic_id)
@@ -194,8 +191,7 @@ C. 前端页面：
         context = {'topic': topic, 'entries': entries}
         return render(request, 'topic.html', context)
     ```
-    
-22. 编写父模板，templates/topics.html
+    编写父模板，templates/topics.html
     ```html
     {% for topic in topics %}
             <li>
@@ -205,13 +201,10 @@ C. 前端页面：
             <li>还没有添加主题</li>
             {% endfor %}
     ```
-
-23. 编写子模板，templates/topic.html
+    编写子模板，templates/topic.html
     ```html
     {% extends 'base.html' %}
-    
     {% block content %}
-    
         <p>{{ topic }}</p>
         <p>内容：</p>
         <ul>
@@ -229,7 +222,8 @@ C. 前端页面：
 
 D. 前端编辑页面，用户可在页面编辑
 
-24. 添加新主题，创建表单 webs/personal/forms.py
+15. 添加新主题，
+    创建表单 webs/personal/forms.py
     ```python
     from django import forms
     from .models import Topic
@@ -242,8 +236,7 @@ D. 前端编辑页面，用户可在页面编辑
             fields = ['text']
             labels = {'text': ''}
     ```
-
-25. 创建 new_topic
+    创建 new_topic
     urls.py
     ```python
     path('new_topic/', views.new_topic, name='new_topic'),
@@ -287,8 +280,61 @@ D. 前端编辑页面，用户可在页面编辑
     <a href="{% url 'new_topic' %}">添加新主题</a>
     ```
 
-
-E. 注册登录
+16. 添加新条目
+    创建表单：forms.py
+    ```python
+    from .models import Topic, Entry
+    # 创建添加条目表单
+    class EntryForm(forms.ModelForm):
+        class Meta:
+            model = Entry
+            fields = ['text']
+            labels = {'text': ''}
+            widgets = {'text': forms.Textarea(attrs={'cols': 80})}
+    ```
+    urls.py
+    ```python
+    re_path(r'^new_entry/(?P<topic_id>\d+)/$', views.new_entry, name='new_entry'),
+    ```
+    views.py
+    ```python
+    from .forms import TopicForm, EntryForm
+    def new_entry(request, topic_id):
+        # 处理表单数据时，需要知道针对的是哪个主题，所以用topic_id来获得对应的主题
+        topic = Topic.objects.get(id=topic_id)
+        if request.method != 'POST':
+            form = EntryForm()
+        else:
+            form = EntryForm(data=request.POST)
+            if form.is_valid():
+                # 船体了实参 commit=False， 让Django创建新的条目对象并存储于new_entry中，但不保存到数据库中。
+                new_entry = form.save(commit=False)
+                new_entry.topic = topic
+                new_entry.save()
+                # 调用reverse()时，需要提供两个实参，生成URL的名称，args列表包含在URL中的所有实参，此处只有一个topic_id元素
+                return HttpResponseRedirect(reverse('topic', args=[topic_id]))
+        context = {'topic': topic, 'form': form}
+        return render(request, 'new_entry.html', context)
+    ```
+    new_entry.html
+    ```html
+    {% extends "base.html" %}
+    {% block content %}
+        <p>主题：<a href="{% url 'topic' topic.id %}">{{ topic }}</a></p>
+        <p>添加新的条目：</p>
+        <form action="{% url 'new_entry' topic.id %}" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button name="submit">提交</button>
+        </form>
+    {% endblock content %}
+    ```
+    topic.html 添加链接
+    ```html
+    <p>主题：{{ topic }}</p>
+    <p>内容：</p>
+    <p><a href="{% url 'new_entry' topic.id %}">添加新条目</a></p>
+    ```
 
 
 

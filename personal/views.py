@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from .models import Topic
-from .forms import TopicForm
+from .forms import TopicForm, EntryForm
 
 def index(request):
     return render(request, 'index.html')
@@ -36,3 +36,21 @@ def new_topic(request):
             return HttpResponseRedirect(reverse('topics'))
     context = {'form': form}
     return render(request, 'new_topic.html', context)
+
+def new_entry(request, topic_id):
+    # 处理表单数据时，需要知道针对的是哪个主题，所以用topic_id来获得对应的主题
+    topic = Topic.objects.get(id=topic_id)
+    if request.method != 'POST':
+        form = EntryForm()
+    else:
+        form = EntryForm(data=request.POST)
+        if form.is_valid():
+            # 船体了实参 commit=False， 让Django创建新的条目对象并存储于new_entry中，但不保存到数据库中。
+            new_entry = form.save(commit=False)
+            new_entry.topic = topic
+            new_entry.save()
+            # 调用reverse()时，需要提供两个实参，生成URL的名称，args列表包含在URL中的所有实参，此处只有一个topic_id元素
+            return HttpResponseRedirect(reverse('topic', args=[topic_id]))
+    context = {'topic': topic, 'form': form}
+    return render(request, 'new_entry.html', context)
+
