@@ -25,7 +25,7 @@ App名称: personal
 4. manage.py
 
 
-开发步骤：
+#### 开发步骤：
 
 A. 准备：
 
@@ -120,6 +120,7 @@ B. 开发
 C. 前端页面：
 
 12. Index主页
+
     添加urls映射,webs/urls.py
     ```python
     from personal import views
@@ -146,7 +147,8 @@ C. 前端页面：
     {% endblock content %}
     ```
     
-13. 显示所有主题页面：Topics，
+13. 显示所有主题页面：Topics
+
     添加urls映射,webs/urls.py
     ```python
     path('topics/', views.topics, name='topics'),
@@ -178,7 +180,8 @@ C. 前端页面：
     {% endblock content %}
     ```
     
-14. 显示特定主题页面：Topic，
+14. 显示特定主题页面：Topic
+
     添加urls映射,webs/urls.py
     ```python
     re_path(r'^topics/(?P<topic_id>\d+)/$', views.topic, name='topic'),
@@ -222,7 +225,8 @@ C. 前端页面：
 
 D. 前端编辑页面，用户可在页面编辑
 
-15. 添加新主题，
+15. 添加新主题 new_topic
+
     创建表单 webs/personal/forms.py
     ```python
     from django import forms
@@ -280,7 +284,8 @@ D. 前端编辑页面，用户可在页面编辑
     <a href="{% url 'new_topic' %}">添加新主题</a>
     ```
 
-16. 添加新条目
+16. 添加新条目 new_entry
+
     创建表单：forms.py
     ```python
     from .models import Topic, Entry
@@ -335,6 +340,47 @@ D. 前端编辑页面，用户可在页面编辑
     <p>内容：</p>
     <p><a href="{% url 'new_entry' topic.id %}">添加新条目</a></p>
     ```
+
+17. 编辑条目 edit_entry
+urls.py
+```python
+re_path(r'^edit_entry/(?P<entry_id>\d+)/$', views.edit_entry, name='edit_entry'),
+```
+views.py
+```python
+from .models import Topic, Entry
+def edit_entry(request, entry_id):
+    # 获取需要修改的条目对象，以及对应的主题
+    entry = Entry.objects.get(id=entry_id)
+    topic = entry.topic
+    if request.method != 'POST':
+        form = EntryForm(instance=entry)
+    else:
+        # 根据表单里已有内容进行修改
+        form = EntryForm(instance=entry, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('topic', args=[topic.id]))
+    context = {'entry': entry, 'topic': topic, 'form': form}
+    return render(request, 'edit_entry.html', context)
+```
+edit_entry.html
+```html
+{% extends "base.html" %}
+{% block content %}
+    <p>主题：<a href="{% url 'topic' topic.id %}">{{ topic }}</a></p>
+    <p>编辑条目：</p>
+    <form action="{% url 'edit_entry' entry.id %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button name="submit">保存</button>
+    </form>
+{% endblock content %}
+```
+topic.html
+```html
+<p><a href="{% url 'edit_entry' entry.id %}">编辑该条目</a></p>
+```
 
 
 

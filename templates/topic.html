@@ -12,6 +12,7 @@
         <li>
             <p>{{ entry.date_add|date:'M d, Y H:i' }}</p>
             <p>{{ entry.text|linebreaks }}</p>
+            <p><a href="{% url 'edit_entry' entry.id %}">编辑该条目</a></p>
         </li>
         {% empty %}
         <li>该主题还没有内容</li>
