@@ -7,9 +7,9 @@ App名称: personal
 虚拟环境: venv
 
 开发目的：
-1. 个人简历单页页面:index，个人简历展示，内容可通过后台修改；
-2. 笔记页面:monolog，前端页面日记随笔记录编辑；
-3. 后台:admin，前端页面内容编辑；
+1. 个人简历单页页面：index，个人简历展示，内容可通过后台修改；
+2. 笔记页面：monolog，前端页面日记随笔记录编辑；
+3. 后台：admin，前端页面内容编辑；
 
 开发工具：
 1. Python-3.7.6
@@ -183,7 +183,7 @@ C. 前端页面：
     
 20. 显示特定主题页面：Topic，添加urls映射,webs/urls.py
     ```python
-    path(r'^topics/(?P<topic_id>\d+)/$', views.topic, name='topic'),
+    re_path(r'^topics/(?P<topic_id>\d+)/$', views.topic, name='topic'),
     ```
 
 21. 编写视图，personal/views.py
@@ -226,5 +226,89 @@ C. 前端页面：
         </ul>
     {% endblock content %}
     ```
+
+D. 前端编辑页面，用户可在页面编辑
+
+24. 添加新主题，创建表单 webs/personal/forms.py
+    ```python
+    from django import forms
+    from .models import Topic
     
-24. 
+    #定义一个类继承forms.ModelForm
+    class TopicForm(forms.ModelForm):
+        # Meta告诉Django根据哪个model创建表单，表单中包含哪些字段
+        class Meta:
+            model = Topic
+            fields = ['text']
+            labels = {'text': ''}
+    ```
+
+25. 创建 new_topic
+    urls.py
+    ```python
+    path('new_topic/', views.new_topic, name='new_topic'),
+    ```
+    views.py
+    ```python
+    def new_topic(request):
+        # 用户需要用表单提交时用POST，从服务器读取数据页面用GET；
+        # 如果请求不是POST，则创建一个新表单，存储在变量 form 中，再通过context字典发送给models
+        if request.method != 'POST':
+            form = TopicForm()
+        else:
+            # POST提交数据，则重定向到上一层 topics
+            # 使用用户输入的数据（存储在request.POST中）
+            form = TopicForm(request.POST)
+            # 将form中的数据提交到数据库中，检测是否有效，使用 is_value() 函数来判断填写字段是否完整。
+            if form.is_valid():
+                # 若填写字段均有效，则调用save()函数进行保存写入数据库。
+                form.save()
+                # 用reverse()函数获取页面topics的url，返回重定向到topics页面。
+                return HttpResponseRedirect(reverse('topics'))
+        context = {'form': form}
+        return render(request, 'new_topic.html', context)
+    ```
+    new_topic.html
+    ```html
+    {% extends "base.html" %}
+    {% block content %}
+        <p>添加新主题：</p>
+        <form action="{% url 'new_topic' %}" method="post">
+    <!--        模板标签防止攻击者利用表单获取对服务器未经授权的访问，跨站请求伪造攻击-->
+            {% csrf_token %}
+    <!--        .as_p让Django以段落格式渲染所有表单元素-->
+            {{ form.as_p }}
+            <button name="submit">提交</button>
+        </form>
+    {% endblock content %}
+    ```
+    topics.html
+    ```html
+    <a href="{% url 'new_topic' %}">添加新主题</a>
+    ```
+
+
+E. 注册登录
+
+
+
+Git，可以选择阿里云或者Github
+.gitignore 
+    venv/
+    __pycache__/
+    *.sqlite3
+
+README.md
+
+$ git init
+$ echo python-django-monolog" >> README.md
+$ git commit -m "first commit"
+$ git git remote add origin https://github.com/xxxx/python-django-monolog.git
+$ git push -u origin master
+# 输入用户名和密码
+# 开始执行
+日常更新发布
+$ git add .
+$ git commit -m "notes"
+$ git push
+
