@@ -1,22 +1,44 @@
 {% extends 'base.html' %}
 
-{% block content %}
+{% block header %}
+    <h3>我的主题：{{ topic }}</h3>
+{% endblock header %}
 
-    <p>主题：{{ topic }}</p>
-    <p>内容：</p>
+{% block content %}
+    <h4>笔记：</h4>
     <p>
-        <a href="{% url 'new_entry' topic.id %}">添加新条目</a>
+        <a href="{% url 'new_entry' topic.id %}">添加新笔记</a>
     </p>
-    <ul>
-        {% for entry in entries %}
-        <li>
-            <p>{{ entry.date_add|date:'M d, Y H:i' }}</p>
-            <p>{{ entry.text|linebreaks }}</p>
-            <p><a href="{% url 'edit_entry' entry.id %}">编辑该条目</a></p>
-        </li>
-        {% empty %}
-        <li>该主题还没有内容</li>
-        {% endfor %}
-    </ul>
+    {% for entry in entries %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4>
+                {{ entry.date_add|date:'M d, Y H:i' }}
+                <small>
+                    <a href="{% url 'edit_entry' entry.id %}">编辑该笔记</a>
+                </small>
+            </h4>
+        </div>
+        <div class="panel-body">
+        {{ entry.text|linebreaks }}
+        </div>
+    </div>
+
+
+    {% empty %}
+        该主题还没有内容
+    {% endfor %}
+
+{#    <ul>#}
+{#        {% for entry in entries %}#}
+{#        <li>#}
+{#            <p>{{ entry.date_add|date:'M d, Y H:i' }}</p>#}
+{#            <p>{{ entry.text|linebreaks }}</p>#}
+{#            <p><a href="{% url 'edit_entry' entry.id %}">编辑该笔记</a></p>#}
+{#        </li>#}
+{#        {% empty %}#}
+{#        <li>该主题还没有内容</li>#}
+{#        {% endfor %}#}
+{#    </ul>#}
 {% endblock content %}
 

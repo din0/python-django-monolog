@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 
+{% block header %}
+    <h3>我的主题：</h3>
+{% endblock header %}
+
 {% block content %}
-    <p>Topics</p>
     <ul>
         {% for topic in topics %}
         <li>

@@ -110,7 +110,9 @@ B. 开发
             return self.text
     ```
     迁移模型，使用 makemigrations & migrate
-    
+    注意："ERROR：创建model时出现错误：TypeError: __init__() missing 1 required positional argument: 'on_delete'"
+    解决：Django 2.0 后表与表之间关联时，定义外键（ForeignKey）需要加上 on_delete=；
+    例如：topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
 11. 向后台添加Model，webs/personal/admin.py
     ```python
     from personal.models import Topic, Entry
@@ -582,7 +584,7 @@ F. 页面样式设置（bootstrap3）
                     aria-expanded="false" aria-controls="navbar">
                 </button>
                 <a class="navbar-brand" href="{% url 'index' %}">
-                    Learning Log
+                    Personal Page
                 </a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
@@ -614,6 +616,15 @@ F. 页面样式设置（bootstrap3）
     ```
 
 25. 页面样式优化
+给每个页面增加header
+```html
+{% block header %}
+    <h3>页面标题：</h3>
+{% endblock header %}
+```
+
+
+
 
 #### < - to be continued - >
 

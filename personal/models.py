@@ -20,10 +20,17 @@ class Entry(models.Model):
     text = models.CharField(max_length=500)
     date_add = models.DateTimeField(auto_now_add=True)
 
-    # Meta用于存储管理模型的额外信息，设置特殊属性，让Django在需要时使用Entries表示多个条目。
+    """
+    Meta用于存储管理模型的额外信息，设置特殊属性，让Django在需要时使用Entries表示多个条目。
+    若没有这个class，则会使用Entrys来表示多个条目。
+    """
     class Mate:
         verbose_name_plural = 'entries'
 
+    """
+    呈现时显示哪些信息，由于包含文本内容不限制长度，这里只显示前50个字符；
+    省略号表示还有内容。
+    """
     def __str__(self):
         if len(self.text) >= 50:
             return self.text[:50] + "..."
